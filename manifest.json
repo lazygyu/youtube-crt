@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Youtube-tube",
+  "description": "This simulates the CRT in Youtube",
+  "version": "1.0",
+  "action": {
+  },
+  "host_permissions": [
+    "https://www.youtube.com/*"
+  ],
+  "permissions": [
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["index.js"],
+      "run_at": "document_end",
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/crt.svg"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
