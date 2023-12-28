@@ -2,6 +2,10 @@
 
 This is a Chrome extension that simulates the CRT screen on YouTube.
 
+# Install
+
+Visit [Chrome Webstore](https://chromewebstore.google.com/detail/diaimpbedknjbpigcfehlbddmcikjnan?hl=ko)
+
 # Development
 
 After cloning this repository, run 
