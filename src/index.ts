@@ -40,11 +40,9 @@ function initializeElements() {
     }
     const container = videoElement.parentElement;
     if (!container) {
-        console.log('Container not found.');
         return;
     }
 
-    console.log('create a canvas and append it after the video');
     const canvas = document.createElement('canvas');
     targetCanvas = canvas;
     const div = document.createElement('div');
@@ -68,7 +66,6 @@ function initializeElements() {
 }
 
 function createToggleButton() {
-    console.log('create toggle button');
     const toggleButton = document.createElement('button');
     const crtUrl = chrome.runtime.getURL('assets/crt.svg');
     toggleButton.classList.add('ytp-button');
@@ -87,7 +84,6 @@ function createToggleButton() {
 
     const fullScreenBtn = document.querySelector('button.ytp-fullscreen-button');
     if (fullScreenBtn) {
-        console.log('put the button into the bar');
         fullScreenBtn.parentElement!.insertBefore(toggleButton, fullScreenBtn);
     }
     return toggleButton;
@@ -149,7 +145,7 @@ function render() {
 }
 
 function attachResizeObserver() {
-    const resizeObserver = new ResizeObserver(( entries ) => {
+    const resizeObserver = new ResizeObserver(() => {
         if (!videoElement) return;
         const canvas = targetCanvas!;
         canvas.style.cssText = videoElement.style.cssText;
@@ -163,10 +159,8 @@ function attachResizeObserver() {
 }
 
 function tryToInit() {
-    console.log('try to init');
     const elem = getYoutubeVideoElement();
     if (elem) {
-        console.log('video elements found');
         videoElement = elem;
         videoElement.crossOrigin = 'anonymous';
         initializeElements();
