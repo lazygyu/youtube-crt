@@ -1,5 +1,6 @@
 import {CRTSimulator} from './lib/CRTSimulator';
 import setting, {SettingEvent} from './lib/settings';
+import {SettingUI} from './lib/settingUi';
 
 export class App {
     private settings = setting;
@@ -13,6 +14,7 @@ export class App {
     private toggleButton: HTMLButtonElement | null = null;
 
     private brightness = 0.125;
+    private settingPopup = new SettingUI();
 
     constructor() {
         this.bufferCanvas = document.createElement('canvas');
@@ -23,6 +25,7 @@ export class App {
     private init() {
         this.getYoutubeVideoElement();
         if (this.videoElement) {
+            this.settingPopup.init();
             this.initializeElements();
             this.attachResizeObserver();
             this.render();
@@ -47,7 +50,6 @@ export class App {
     private initializeElements() {
         this.createCanvas();
         this.createToggleButton();
-        this.createBrightnessSlider();
 
         this.crt = new CRTSimulator(this.targetCanvas!);
     }
@@ -97,7 +99,7 @@ export class App {
             background-color: white;
         `;
         toggleButton.addEventListener('click', () => {
-            this.settings.setValue('enabled', !this.settings.values.enabled);
+            this.settingPopup.open();
         });
 
         const fullScreenBtn = document.querySelector('button.ytp-fullscreen-button');
@@ -105,33 +107,6 @@ export class App {
             fullScreenBtn.parentElement!.insertBefore(toggleButton, fullScreenBtn);
         }
         this.toggleButton = toggleButton;
-    }
-
-    private createBrightnessSlider() {
-        const slider = document.createElement('input');
-        slider.type = 'range';
-        slider.min = '0';
-        slider.max = '1';
-        slider.step = 'any';
-        slider.value = String(this.settings.getValue('brightness'));
-        slider.id = 'slider-brightness';
-        slider.style.height = '48px';
-        slider.style.width = '96px';
-
-        slider.addEventListener('input', (e) => {
-            this.brightness = Number((e.target as HTMLInputElement).value) || 0;
-        });
-        slider.addEventListener('change', (e) => {
-            this.brightness = Number((e.target as HTMLInputElement).value) || 0;
-            this.settings.setValue('brightness', this.brightness);
-        });
-
-        const fullScreenBtn = document.querySelector('button.ytp-fullscreen-button');
-        if (fullScreenBtn) {
-            fullScreenBtn.parentElement!.insertBefore(slider, fullScreenBtn);
-        }
-
-        this.brightnessSlider = slider;
     }
 
     private attachResizeObserver() {
@@ -169,8 +144,9 @@ export class App {
 
     private drawVideoToBuffer() {
         if (this.targetCanvas && this.bufferCanvas && this.videoElement) {
-            this.bufferCanvas.width = Math.round(this.targetCanvas.width / 3);
-            this.bufferCanvas.height = Math.round(this.targetCanvas.height / 3);
+            const size = this.settings.values.pixelSize * 3;
+            this.bufferCanvas.width = Math.round(this.targetCanvas.width / size);
+            this.bufferCanvas.height = Math.round(this.targetCanvas.height / size);
             const ctx = this.bufferCanvas.getContext('2d');
             if (ctx) {
                 ctx.imageSmoothingEnabled = false;
@@ -183,15 +159,13 @@ export class App {
 
     private handleSettingUpdated(e: Event) {
         const values = (e as SettingEvent).data;
+        this.brightness = values.brightness;
         if (this.targetCanvas && this.targetCanvas.parentElement) {
             this.targetCanvas.parentElement.style.display = values.enabled ? 'block' : 'none';
         }
         if (this.brightnessSlider) {
             this.brightnessSlider.value = String(values.brightness);
             this.brightnessSlider.disabled = !values.enabled;
-        }
-        if (this.toggleButton) {
-            this.toggleButton.style.backgroundColor = values.enabled ? 'white' : '#666';
         }
     }
 }

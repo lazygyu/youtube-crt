@@ -107,17 +107,32 @@ export class CRTSimulator {
     render(img: TexImageSource & {width: number, height: number}, options?: {brightBlur?: number, pixelSize?: number}) {
         if (!this.glParams) return;
 
+        const brightBlur = (options && options.brightBlur) ? options.brightBlur : 0;
+        const pixelSize = options?.pixelSize ?? 1;
+
         this.clearViewport();
 
         const gl = this.ctx;
         gl.useProgram(this.glParams.program);
         gl.bindVertexArray(this.glParams.vao);
 
-        const brightBlur = (options && options.brightBlur) ? options.brightBlur : 0;
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glParams.texCoordBuffer);
+        const sizeMultiplier = pixelSize * 3;
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            0.0, 0.0,
+            sizeMultiplier, 0.0,
+            0.0, sizeMultiplier,
+            0.0, sizeMultiplier,
+            sizeMultiplier, 0.0,
+            sizeMultiplier, sizeMultiplier
+        ]), gl.STATIC_DRAW);
+
+
+
 
         gl.uniform1f(this.glParams.brightBlurUniformLocation, brightBlur);
         gl.uniform2f(this.glParams.resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
-        gl.uniform1ui(this.glParams.pixelSizeUniformLocation, options?.pixelSize ?? 1);
+        gl.uniform1ui(this.glParams.pixelSizeUniformLocation, pixelSize);
 
         gl.uniform1i(this.glParams.imageLocation, 0);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);

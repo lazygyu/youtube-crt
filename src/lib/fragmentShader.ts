@@ -25,7 +25,7 @@ void main() {
 		return;
 	} 
 
-	vec2 tcoord = v_texCoord / 3.0;
+	vec2 tcoord = v_texCoord / pixelSize;
 	vec4 cl = texture(u_image, tcoord);
 
 	vec2 onePixel = vec2(1) / vec2(textureSize(u_image, 0));
@@ -39,7 +39,7 @@ void main() {
 
 	if (ix < pixelSize / 3.0) {
 		outColor = vec4(cl.r + brightness, 0, 0, 1);
-	} else if (ix < pixelSize / 3.0 + 1.0) {
+	} else if (ix < pixelSize / 3.0 * 2.0) {
 		outColor = vec4(0, cl.g + brightness, 0, 1);
 	} else {
 		outColor = vec4(0, 0, cl.b + brightness, 1);
