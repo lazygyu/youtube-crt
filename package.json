@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "parcel build ./src/index.ts --out-dir dist && npm run copy-resources",
-    "copy-resources": "copyfiles 'manifest.json' './assets/**/*' dist",
+    "copy-resources": "copyfiles --verbose \"./manifest.json\" \"./assets/**/*\" dist",
     "dev": "parcel watch ./src/index.ts --out-dir dist"
   },
   "keywords": [],
