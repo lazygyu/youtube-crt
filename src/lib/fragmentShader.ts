@@ -4,6 +4,7 @@ precision highp float;
 uniform sampler2D u_image;
 uniform vec2 u_resolution;
 uniform float u_brightBlur;
+uniform uint u_pixelSize;
 
 in vec2 v_texCoord;
 out vec4 outColor;
@@ -14,9 +15,10 @@ float modI(float a, float b) {
 }
 
 void main() {
+    float pixelSize = float(u_pixelSize) * 3.0;
 	vec2 fragCoord = gl_FragCoord.xy;
-	float ix = mod(fragCoord.x, 3.0);
-	float iy = mod(fragCoord.y, 3.0);
+	float ix = mod(fragCoord.x, pixelSize);
+	float iy = mod(fragCoord.y, pixelSize);
 
 	if (iy < 1.0) {
 		outColor = vec4(0, 0, 0, 0);
@@ -35,9 +37,9 @@ void main() {
 	float brightness = (0.299 * brightAvg.r + 0.587 * brightAvg.g + 0.114 * brightAvg.b) * u_brightBlur;
 	brightness = (brightness * brightness);
 
-	if (ix < 1.0) {
+	if (ix < pixelSize / 3.0) {
 		outColor = vec4(cl.r + brightness, 0, 0, 1);
-	} else if (ix < 2.0) {
+	} else if (ix < pixelSize / 3.0 + 1.0) {
 		outColor = vec4(0, cl.g + brightness, 0, 1);
 	} else {
 		outColor = vec4(0, 0, cl.b + brightness, 1);

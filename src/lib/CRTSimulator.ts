@@ -27,6 +27,7 @@ type GlParams = {
     program: any;
     brightBlurUniformLocation: WebGLUniformLocation;
     imageLocation: WebGLUniformLocation
+    pixelSizeUniformLocation: WebGLUniformLocation;
 };
 
 export class CRTSimulator {
@@ -53,6 +54,7 @@ export class CRTSimulator {
 
         const resolutionUniformLocation = gl.getUniformLocation(program, 'u_resolution')!;
         const brightBlurUniformLocation = gl.getUniformLocation(program, 'u_brightBlur')!;
+        const pixelSizeUniformLocation = gl.getUniformLocation(program, 'u_pixelSize')!;
         const imageLocation = gl.getUniformLocation(program, 'u_image')!;
 
         const vao = gl.createVertexArray()!;
@@ -97,11 +99,12 @@ export class CRTSimulator {
             texture,
             resolutionUniformLocation,
             brightBlurUniformLocation,
+            pixelSizeUniformLocation,
             vao,
         };
     }
 
-    render(img: TexImageSource & {width: number, height: number}, options?: {brightBlur?: number}) {
+    render(img: TexImageSource & {width: number, height: number}, options?: {brightBlur?: number, pixelSize?: number}) {
         if (!this.glParams) return;
 
         this.clearViewport();
@@ -114,6 +117,7 @@ export class CRTSimulator {
 
         gl.uniform1f(this.glParams.brightBlurUniformLocation, brightBlur);
         gl.uniform2f(this.glParams.resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
+        gl.uniform1ui(this.glParams.pixelSizeUniformLocation, options?.pixelSize ?? 1);
 
         gl.uniform1i(this.glParams.imageLocation, 0);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);

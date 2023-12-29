@@ -1,21 +1,22 @@
 import {CRTSimulator} from './lib/CRTSimulator';
+import setting, {SettingEvent} from './lib/settings';
 
 export class App {
+    private settings = setting;
     private targetCanvas: HTMLCanvasElement | null = null;
     private videoElement: HTMLVideoElement | null = null;
 
     private bufferCanvas: HTMLCanvasElement;
     private crt!: CRTSimulator;
 
-    private isEnabled = true;
-    private brightness = 0.125;
-
     private brightnessSlider: HTMLInputElement | null = null;
     private toggleButton: HTMLButtonElement | null = null;
 
+    private brightness = 0.125;
+
     constructor() {
         this.bufferCanvas = document.createElement('canvas');
-        this.loadSettings();
+        this.settings.addEventListener('settingUpdated', this.handleSettingUpdated.bind(this));
         this.init();
     }
 
@@ -96,7 +97,7 @@ export class App {
             background-color: white;
         `;
         toggleButton.addEventListener('click', () => {
-            this.setSettings(!this.isEnabled, this.brightness);
+            this.settings.setValue('enabled', !this.settings.values.enabled);
         });
 
         const fullScreenBtn = document.querySelector('button.ytp-fullscreen-button');
@@ -112,7 +113,7 @@ export class App {
         slider.min = '0';
         slider.max = '1';
         slider.step = 'any';
-        slider.value = String(this.brightness);
+        slider.value = String(this.settings.getValue('brightness'));
         slider.id = 'slider-brightness';
         slider.style.height = '48px';
         slider.style.width = '96px';
@@ -122,7 +123,7 @@ export class App {
         });
         slider.addEventListener('change', (e) => {
             this.brightness = Number((e.target as HTMLInputElement).value) || 0;
-            this.setSettings(this.isEnabled, this.brightness);
+            this.settings.setValue('brightness', this.brightness);
         });
 
         const fullScreenBtn = document.querySelector('button.ytp-fullscreen-button');
@@ -149,11 +150,11 @@ export class App {
 
 
     private render() {
-        if (this.isEnabled && this.bufferCanvas && this.targetCanvas && this.videoElement) {
+        if (this.settings.values.enabled && this.bufferCanvas && this.targetCanvas && this.videoElement) {
             try {
                 this.drawVideoToBuffer();
                 if (this.crt) {
-                    this.crt.render(this.bufferCanvas, {brightBlur: this.brightness});
+                    this.crt.render(this.bufferCanvas, {brightBlur: this.brightness, pixelSize: this.settings.values.pixelSize});
                 }
             } catch (e) {
                 console.error(e);
@@ -180,27 +181,17 @@ export class App {
         }
     }
 
-    private loadSettings() {
-        chrome.storage.sync.get(['enable', 'brightness'], (result) => {
-            this.isEnabled = !!result.enable;
-            this.brightness = result.brightness || 0.125;
-
-            if (this.targetCanvas && this.targetCanvas.parentElement) {
-                this.targetCanvas.parentElement.style.display = this.isEnabled ? 'block' : 'none';
-            }
-            if (this.brightnessSlider) {
-                this.brightnessSlider.value = String(this.brightness);
-                this.brightnessSlider.disabled = !this.isEnabled;
-            }
-            if (this.toggleButton) {
-                this.toggleButton.style.backgroundColor = this.isEnabled ? 'white' : '#666';
-            }
-        });
-    }
-
-    private setSettings(isEnabled: boolean, brightness: number) {
-        chrome.storage.sync.set({enable: isEnabled, brightness}, () => {
-            this.loadSettings();
-        });
+    private handleSettingUpdated(e: Event) {
+        const values = (e as SettingEvent).data;
+        if (this.targetCanvas && this.targetCanvas.parentElement) {
+            this.targetCanvas.parentElement.style.display = values.enabled ? 'block' : 'none';
+        }
+        if (this.brightnessSlider) {
+            this.brightnessSlider.value = String(values.brightness);
+            this.brightnessSlider.disabled = !values.enabled;
+        }
+        if (this.toggleButton) {
+            this.toggleButton.style.backgroundColor = values.enabled ? 'white' : '#666';
+        }
     }
 }
